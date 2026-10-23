@@ -1,0 +1,16 @@
+# Source documents: not redistributed (see README for how to obtain them)
+data/raw/*
+!data/raw/.gitkeep
+# Derived files that contain full article text or organisation names
+data/processed/*
+!data/processed/.gitkeep
+data/processed/ocr_pages/
+# Python / tooling
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+# OS
+.DS_Store
+Thumbs.db
