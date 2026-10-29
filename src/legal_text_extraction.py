@@ -77,9 +77,9 @@ def parse_ordinal(label):
                 tens = _TENS.get(word[1:])
                 ones = parse_ordinal(" ".join(words[:i]))
                 return tens + ones if tens is not None and ones is not None else None
-    if len(words) == 2 and words[0] in ("الحادية", "الحادي") and words[1] in ("عشرة", "عشر"):
+    if len(words) == 2 and words[0] in ("الحاديه", "الحادي") and words[1] in ("عشره", "عشر"):
         return 11
-    if len(words) == 2 and words[0] in ("الثانية", "الثاني") and words[1] in ("عشرة", "عشر"):
+    if len(words) == 2 and words[0] in ("الثانيه", "الثاني") and words[1] in ("عشره", "عشر"):
         return 12
     if s.isdigit():
         return int(s)
