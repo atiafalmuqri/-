@@ -26,7 +26,7 @@ main{min-width:0}.topbar{background:var(--white);border-bottom:1px solid var(--l
   <div class="brand"><div class="brand-mark">ب</div><div><div class="brand-title">تحليل البيانات للقطاع غير الربحي</div><div class="brand-caption">من البيانات إلى المؤشرات، ومن المؤشرات إلى قرارات أفضل.</div></div></div>
   <div class="nav-title">مساحة العمل</div>
   <nav class="nav" aria-label="التنقل الرئيسي"><button class="active" data-target="home" onclick="navigate(this,'home')"><span class="nav-icon">⌂</span>الرئيسية ورفع الملفات</button><button data-target="gov" onclick="navigate(this,'gov')"><span class="nav-icon">▦</span>تحليل الحوكمة</button><button data-target="res" onclick="navigate(this,'res')"><span class="nav-icon">≡</span>تحليل الموارد واللوائح</button><button data-target="stats" onclick="navigate(this,'stats')"><span class="nav-icon">▥</span>التحليل الإحصائي</button><button data-target="rec" onclick="navigate(this,'rec')"><span class="nav-icon">✧</span>التوصيات</button><button data-target="rep" onclick="navigate(this,'rep')"><span class="nav-icon">⇩</span>التقارير والتصدير</button></nav>
-  <div class="sidebar-note">نسخة محلية داخل المتصفح. لا يتم رفع الملفات إلى خادم أو حفظها في قاعدة بيانات.</div>
+  <div class="sidebar-note">تُحفظ نتائج التحليل والمراجعات تلقائيًا في هذا المتصفح. لا تُزامَن بين الأجهزة ولا تُرفع إلى قاعدة بيانات سحابية.</div>
 </aside>
 <main>
   <header class="topbar">
@@ -57,7 +57,7 @@ main{min-width:0}.topbar{background:var(--white);border-bottom:1px solid var(--l
         <h3>إعدادات الجمعية والمستند</h3><p class="panel-desc">الاسم ونوع المستند لأغراض العرض والتحليل المحلي فقط.</p>
         <div class="field"><label for="orgName">اسم الجمعية</label><input id="orgName" placeholder="اكتبي اسم الجمعية" autocomplete="organization"></div>
         <div class="form-row"><div class="field"><label for="docType">نوع المستند</label><select id="docType"><option value="غير محدد">تلقائي / غير محدد</option><option>لائحة أساسية</option><option>لائحة تنفيذية</option><option>قواعد حوكمة</option><option>سياسة داخلية</option><option>تقرير سنوي</option><option>مستند آخر</option></select></div><div class="field"><label for="sourceNote">ملاحظة المصدر (اختياري)</label><input id="sourceNote" placeholder="مثال: إصدار أو تاريخ"></div></div>
-        <div class="notice">هذه الإعدادات لا تنشئ حسابًا ولا تحفظ البيانات بصورة دائمة. يتطلب تعدد الجمعيات وفصل بياناتها خادمًا وقاعدة بيانات وصلاحيات فعلية.</div>
+        <div class="notice">تُحفظ الإعدادات ونتائج التحليل في هذا المتصفح بعد المعالجة. هذا حفظ محلي وليس قاعدة بيانات سحابية؛ المزامنة بين الأجهزة وتعدد المستخدمين يتطلبان إعداد خدمة خلفية وقاعدة بيانات وصلاحيات.</div>
       </div>
     </section>
     </div><div class="page" id="pg-gov"><div class="section-head" id="topicsSection"><div><h2>تحليل الحوكمة</h2><p>يمكن إسناد أكثر من موضوع للمادة الواحدة وفق قواعد موضوعية استرشادية.</p></div></div>
@@ -91,10 +91,13 @@ main{min-width:0}.topbar{background:var(--white);border-bottom:1px solid var(--l
   <footer class="footer">تحليل البيانات للقطاع غير الربحي • نسخة محلية تجريبية • لا تمثل تقييمًا رسميًا للحوكمة أو الامتثال.</footer>
 </main>
 </div>
-<script src="./تحليل البيانات للقطاع غير الربحي_files/pdf.min.js.download"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 "use strict";
 let articles=[],fileMeta=[],sortState={key:"fileName",dir:1};
+const STORAGE_KEY="nonprofit-governance-dashboard-v1";
+function saveWorkspace(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({version:1,savedAt:new Date().toISOString(),articles,fileMeta,orgName:document.getElementById("orgName")?.value||"",docType:document.getElementById("docType")?.value||"غير محدد",sourceNote:document.getElementById("sourceNote")?.value||""}));return true}catch(e){console.warn("تعذر حفظ مساحة العمل محليًا",e);return false}}
+function restoreWorkspace(){try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const s=JSON.parse(raw);if(!s||s.version!==1)return;articles=Array.isArray(s.articles)?s.articles:[];fileMeta=Array.isArray(s.fileMeta)?s.fileMeta:[];document.getElementById("orgName").value=s.orgName||"";document.getElementById("docType").value=s.docType||"غير محدد";document.getElementById("sourceNote").value=s.sourceNote||"";document.getElementById("orgChip").textContent="الجمعية: "+(s.orgName||"غير محددة");document.getElementById("state").textContent=articles.length?"تم استعادة آخر جلسة محفوظة":"بانتظار الملفات";renderFileStatuses();document.getElementById("fileNames").textContent=fileMeta.length?"تم استعادة نتائج التحليل المحفوظة ("+fileMeta.length+" ملفات). أعيدي اختيار ملفات PDF لإعادة تحليلها.":"لم يتم اختيار ملفات."}catch(e){console.warn("تعذر استعادة مساحة العمل",e)}}
 const REVIEW_AUTO="مصنفة آليًا وتحتاج إلى تحقق", REVIEW_DONE="تمت مراجعتها", REVIEW_MORE="تحتاج إلى مراجعة إضافية";
 const rules={
 "مجلس الإدارة والصلاحيات":["مجلس الإدارة","مجلس ادارة","رئيس المجلس","صلاحيات المجلس","عضو مجلس الإدارة","عضوية مجلس الإدارة","اجتماع المجلس","نائب الرئيس"],
@@ -127,10 +130,12 @@ function splitPage(text,pageNo,fileName){
  return out;
 }
 document.getElementById("pdfFiles").addEventListener("change",e=>{const fs=[...e.target.files];document.getElementById("fileNames").textContent=fs.length?fs.map(f=>`${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`).join(" • "):"لم يتم اختيار ملفات."});
-document.getElementById("orgName").addEventListener("input",e=>{document.getElementById("orgChip").textContent="الجمعية: "+(e.target.value.trim()||"غير محددة")});
+document.getElementById("orgName").addEventListener("input",e=>{document.getElementById("orgChip").textContent="الجمعية: "+(e.target.value.trim()||"غير محددة");saveWorkspace()});
+document.getElementById("docType").addEventListener("change",saveWorkspace);document.getElementById("sourceNote").addEventListener("input",saveWorkspace);
 async function analyzeFiles(){
  const files=[...document.getElementById("pdfFiles").files];if(!files.length){alert("اختاري ملف PDF أولًا.");return}
  if(!window.pdfjsLib){alert("تعذر تحميل مكتبة قراءة PDF. يلزم اتصال بالإنترنت لتحميل المكتبة ثم إعادة المحاولة.");return}
+ if(window.pdfjsLib?.GlobalWorkerOptions)pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const btn=document.getElementById("analyzeBtn");btn.disabled=true;btn.textContent="جارٍ التحليل…";
  articles=[];fileMeta=[];document.getElementById("fileStatusList").innerHTML="";document.getElementById("state").textContent="جارٍ التحليل…";
  let id=0;
@@ -155,7 +160,7 @@ async function analyzeFiles(){
   renderFileStatuses();
  }
  articles=articles.map(a=>({...a,orgName:document.getElementById("orgName").value.trim(),docType:document.getElementById("docType").value}));
- renderAll();document.getElementById("state").textContent=articles.length?"اكتمل الاستخراج الأولي":"لم يُستخرج نص واضح";btn.disabled=false;btn.textContent="استخراج النصوص وتحليلها";
+ renderAll();document.getElementById("state").textContent=articles.length?"اكتمل الاستخراج الأولي":"لم يُستخرج نص واضح";const saved=saveWorkspace();if(!saved)alert("اكتمل التحليل، لكن تعذر حفظه في مساحة التخزين المحلية. صدّري النتائج للاحتفاظ بنسخة.");btn.disabled=false;btn.textContent="استخراج النصوص وتحليلها";
 }
 function renderFileStatuses(){const box=document.getElementById("fileStatusList");box.innerHTML=fileMeta.map(f=>`<div class="file-status"><strong>${esc(f.name)}</strong><span class="${f.failed?'status-fail':f.ocr?'status-warn':'status-ok'}">${esc(f.status)}</span><div class="meta">الصفحات: ${f.pages} • المواد/المقاطع: ${f.count}</div><div class="meta">${esc(f.note)}</div></div>`).join("");}
 function renderAll(){updateMetrics();renderTopics();fillTopicFilter();renderTable();renderCharts();renderRecommendations()}
@@ -177,7 +182,7 @@ function renderTable(){
  body.innerHTML=rows.map(a=>`<tr><td>${esc(a.fileName)}</td><td>${esc(a.number)}</td><td>${a.page}</td><td><div class="topic-tags">${a.topics.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div></td><td>${esc(a.reason)}</td><td class="text-cell">${esc(a.text)}</td><td><select class="review-select" aria-label="حالة مراجعة المادة ${esc(a.number)}" onchange="setReview(${a.id},this.value)">${[REVIEW_AUTO,REVIEW_DONE,REVIEW_MORE].map(s=>`<option ${a.status===s?"selected":""}>${s}</option>`).join("")}</select></td></tr>`).join("");
  document.getElementById("tableCount").textContent=`عدد النتائج: ${rows.length} من ${articles.length}`;
 }
-function setReview(id,status){const a=articles.find(x=>x.id===id);if(a){a.status=status;updateMetrics();renderCharts();renderRecommendations()}}
+function setReview(id,status){const a=articles.find(x=>x.id===id);if(a){a.status=status;updateMetrics();renderCharts();renderRecommendations();saveWorkspace()}}
 function resetFilters(){document.getElementById("topicFilter").value="";document.getElementById("searchText").value="";document.getElementById("statusFilter").value="";renderTable()}
 function renderCharts(){
  drawBarChart(document.getElementById("topicChart"),Object.entries(articles.reduce((o,a)=>{a.topics.forEach(t=>o[t]=(o[t]||0)+1);return o},{})).sort((a,b)=>b[1]-a[1]).slice(0,8));
@@ -210,9 +215,9 @@ function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.
 function exportCSV(){if(!articles.length){alert("لا توجد نتائج للتصدير.");return}const csv="\ufeff"+exportRows().map(r=>r.map(x=>'"'+String(x??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");downloadBlob(new Blob([csv],{type:"text/csv;charset=utf-8;"}),"تحليل_البيانات_للقطاع_غير_الربحي.csv")}
 function exportExcelCompatible(){if(!articles.length){alert("لا توجد نتائج للتصدير.");return}const rows=exportRows();const htmlTable="<html><head><meta charset='utf-8'></head><body><table>"+rows.map((r,i)=>"<tr>"+r.map(x=>"<"+(i===0?"th":"td")+">"+esc(x)+"</"+(i===0?"th":"td")+">").join("")+"</tr>").join("")+"</table></body></html>";downloadBlob(new Blob(["\ufeff",htmlTable],{type:"application/vnd.ms-excel;charset=utf-8;"}),"تحليل_البيانات_للقطاع_غير_الربحي.xls")}
 function printReport(){window.print()}
-function clearResults(){if(!confirm("هل تريدين مسح نتائج التحليل من هذه الجلسة؟"))return;articles=[];fileMeta=[];document.getElementById("pdfFiles").value="";document.getElementById("fileNames").textContent="لم يتم اختيار ملفات.";document.getElementById("fileStatusList").innerHTML="";document.getElementById("state").textContent="بانتظار الملفات";renderAll()}
+function clearResults(){if(!confirm("هل تريدين مسح نتائج التحليل المحفوظة من هذا المتصفح؟"))return;articles=[];fileMeta=[];localStorage.removeItem(STORAGE_KEY);document.getElementById("pdfFiles").value="";document.getElementById("fileNames").textContent="لم يتم اختيار ملفات.";document.getElementById("fileStatusList").innerHTML="";document.getElementById("state").textContent="بانتظار الملفات";renderAll()}
 window.addEventListener("resize",()=>{if(articles.length)renderCharts()});
-renderAll();
+restoreWorkspace();renderAll();
 </script>
 
 <script>
