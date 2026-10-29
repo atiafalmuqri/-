@@ -101,3 +101,15 @@ python -m pytest tests/
 ## الاسم المختصر
 
 **مِعيار**
+
+## مطابقة مواد الحوكمة باللائحة
+
+يوفر `src/model_matching.py` خط أساس قابلًا لإعادة التشغيل باستخدام TF-IDF على مستوى المحارف. يحتاج إلى ملف CSV المنظف الذي يحتوي 176 مادة (47 حوكمة و129 لائحة):
+
+```bash
+python -m src.model_matching --input legal_articles_full_updated.csv --output-dir data/outputs
+```
+
+ينتج `data/outputs/tfidf_matches.csv` و`data/outputs/tfidf_summary.json`. درجات التشابه ترتيب لغوي أولي وليست حكمًا قانونيًا أو قياسًا مستقلًا للدقة.
+
+دفتر المطابقة [`notebooks/model_matching.ipynb`](notebooks/model_matching.ipynb) يعمل محليًا أو في Google Colab. تشغيل BGE-M3 والتجميع يتطلب تنزيل النموذج لأول مرة واتصالًا بالإنترنت؛ لم تُعتبر نتائج تلك الخطوات مؤكدة إلا بعد تشغيلها بنجاح.
