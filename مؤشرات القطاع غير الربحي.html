@@ -1,0 +1,629 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مؤشرات القطاع غير الربحي</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap">
+<style>
+/* Layout: شريط فلاتر ثابت، صف مؤشرات، شبكة 7/5 (جغرافيا + أنواع، ثم مواد + استنتاجات)، ثم جدول بيانات.
+   Charts use validated categorical slots 1-2 (blue, orange); bars use one blue with a muted step for context. */
+:root{
+  --bg:#f2f5f6; --surface:#ffffff;
+  --ink:#111d27; --ink-2:#465662; --muted:#66747f;
+  --line:#dbe2e6; --line-2:#e9eef1; --hover:#f3f7fa;
+  --accent:#1c5cab; --accent-soft:#e7effb;
+  --s1:#2a78d6; --s1-mute:#86b6ef; --s2:#eb6834;
+  --tipbg:#111d27; --tipfg:#f2f5f6;
+  --font-body:'IBM Plex Sans Arabic',system-ui,'Segoe UI',Tahoma,sans-serif;
+  --font-display:'Readex Pro','IBM Plex Sans Arabic',system-ui,'Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101315; --surface:#1a1a19;
+    --ink:#eceff1; --ink-2:#bfc7cc; --muted:#929ea6;
+    --line:#2d3235; --line-2:#252a2d; --hover:#202426;
+    --accent:#6da7ec; --accent-soft:#1d2b3d;
+    --s1:#3987e5; --s1-mute:#1c5cab; --s2:#d95926;
+    --tipbg:#eceff1; --tipfg:#101315;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101315; --surface:#1a1a19;
+  --ink:#eceff1; --ink-2:#bfc7cc; --muted:#929ea6;
+  --line:#2d3235; --line-2:#252a2d; --hover:#202426;
+  --accent:#6da7ec; --accent-soft:#1d2b3d;
+  --s1:#3987e5; --s1-mute:#1c5cab; --s2:#d95926;
+  --tipbg:#eceff1; --tipfg:#101315;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font-body); font-size:14px; line-height:1.6;
+  padding-block:16px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{direction:ltr;unicode-bidi:isolate;display:inline-block;font-variant-numeric:tabular-nums}
+.app{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 24px;padding-block:8px 0}
+.top h1{margin:0;font-family:var(--font-display);font-weight:600;font-size:clamp(22px,3.2vw,30px);line-height:1.3;text-wrap:balance}
+.top p{margin:0;color:var(--muted);font-size:13px}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.ch{display:flex;flex-wrap:wrap;align-items:start;justify-content:space-between;gap:8px 16px;margin-bottom:14px}
+.ch h2{margin:0;font-size:16px;font-weight:600;line-height:1.4}
+.sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+.scope{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 10px;white-space:nowrap}
+.scope.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+
+/* filters */
+.fbar-wrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);padding-block:8px}
+.fbar{display:flex;flex-wrap:wrap;align-items:end;gap:12px 16px;padding:12px 14px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.flabel{font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;min-height:36px}
+.btn:hover:not(:disabled){background:var(--hover)}
+.btn:disabled{opacity:.45;cursor:default}
+.ms{position:relative}
+.ms summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:11rem;min-height:36px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer}
+.ms summary::-webkit-details-marker{display:none}
+.ms summary:hover{background:var(--hover)}
+.ms.active summary{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.chev{width:7px;height:7px;border-inline-end:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);flex:none}
+.ms[open] .chev{transform:rotate(-135deg) translateY(-1px)}
+.ms-panel{position:absolute;inset-inline-start:0;top:calc(100% + 6px);z-index:50;width:max(100%,18rem);max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgb(0 0 0 / .14)}
+.ms-search{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.ms-list{list-style:none;margin:8px 0 0;padding:0;max-height:15rem;overflow:auto}
+.ms-list li[hidden]{display:none}
+.opt{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer}
+.opt:hover{background:var(--hover)}
+.opt input{accent-color:var(--accent);width:16px;height:16px;flex:none}
+.opt .on{flex:1;min-width:0}
+.opt .oc{color:var(--muted);font-size:12px}
+.ms-foot{margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:4px 2px;font-size:13px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 14px;min-height:34px;cursor:pointer;border-inline-start:1px solid var(--line)}
+.seg button:first-child{border-inline-start:0}
+.seg button:hover{background:var(--hover)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.chips{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+.chip{border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-size:13px;cursor:pointer}
+.chip::after{content:" ×"}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.kl{margin:0;color:var(--ink-2);font-size:13px}
+.kv{margin:4px 0 2px;font-family:var(--font-display);font-weight:600;font-size:clamp(26px,3.4vw,36px);line-height:1.2;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.kv small{font-family:var(--font-body);font-weight:400;font-size:14px;color:var(--muted)}
+.ks{margin:0;color:var(--muted);font-size:12.5px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start}
+.c7{grid-column:span 7}.c5{grid-column:span 5}.c12{grid-column:span 12}
+
+/* bars */
+.bars{display:flex;flex-direction:column;gap:2px}
+.row{display:grid;grid-template-columns:minmax(8.5rem,13rem) minmax(0,1fr) 6.4rem;grid-template-areas:"lab track val";align-items:center;gap:12px;width:100%;background:none;border:0;border-radius:6px;padding:5px 6px;cursor:pointer;text-align:start}
+.row:hover{background:var(--hover)}
+.lab{grid-area:lab;font-size:13.5px;line-height:1.35}
+.track{grid-area:track;height:14px;border-radius:4px;background:var(--line-2);display:block}
+.fill{display:block;height:100%;width:0;background:var(--s1-mute);border-start-end-radius:4px;border-end-end-radius:4px;transition:width .35s ease,background-color .2s}
+.row.hi .fill{background:var(--s1)}
+.row.off .lab,.row.off .val{opacity:.5}
+.row[aria-pressed="true"] .lab{font-weight:600}
+.val{grid-area:val;display:flex;justify-content:flex-end;align-items:baseline;gap:6px}
+.val b{font-weight:600;font-size:14px}
+.val .pc{color:var(--muted);font-size:12px}
+.key{display:flex;flex-wrap:wrap;gap:4px 16px;margin:12px 0 0;color:var(--muted);font-size:12.5px}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.sw.hi{background:var(--s1)}.sw.lo{background:var(--s1-mute)}
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+
+/* donut */
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:18px}
+.donut{position:relative;width:min(240px,100%)}
+.donut svg{display:block;width:100%;height:auto}
+.ring{fill:none;stroke:var(--line-2);stroke-width:26}
+.seg-arc{fill:none;stroke-width:26;cursor:pointer;transition:stroke-width .2s,opacity .2s}
+.seg-arc.sel{stroke-width:31}
+.seg-arc.off{opacity:.35}
+.mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none;gap:0}
+.mid b{font-family:var(--font-display);font-weight:600;font-size:30px;line-height:1.2}
+.mid span{color:var(--muted);font-size:12.5px}
+.legend{width:100%;display:flex;flex-direction:column;gap:4px}
+.leg{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px;width:100%;background:none;border:0;border-radius:6px;padding:8px 6px;cursor:pointer;text-align:start}
+.leg:hover{background:var(--hover)}
+.leg.off{opacity:.5}
+.leg[aria-pressed="true"] .ln{font-weight:600}
+.leg .sw{width:14px;height:14px;border-radius:4px}
+.leg b{font-weight:600}
+.leg .pc{color:var(--muted);font-size:12.5px;min-width:3.6rem;text-align:end}
+.ratio{margin:0;width:100%;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--ink-2);font-size:13px}
+.ratio b{font-family:var(--font-display);font-weight:600;color:var(--ink)}
+
+/* topic toolbar */
+.mini{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mini button{border:0;background:transparent;padding:3px 12px;cursor:pointer;font-size:13px;border-inline-start:1px solid var(--line)}
+.mini button:first-child{border-inline-start:0}
+.mini button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+
+/* insights */
+.ins{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.ins li{padding:14px 0;border-top:1px solid var(--line)}
+.ins li:first-child{border-top:0;padding-top:0}
+.ins li:last-child{padding-bottom:0}
+.ins h3{margin:0 0 2px;font-size:13px;font-weight:500;color:var(--ink-2)}
+.ins .big{display:inline-block;font-family:var(--font-display);font-weight:600;font-size:26px;line-height:1.25;color:var(--ink)}
+.ins p{margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
+.ins .act{color:var(--muted);font-size:12.5px}
+.ins .act b{color:var(--accent);font-weight:600}
+
+/* table */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 14px;cursor:pointer}
+.tab:hover{background:var(--hover)}
+.tab[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);font-weight:600}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:30rem}
+th,td{padding:8px 10px;text-align:start;border-bottom:1px solid var(--line-2);font-size:13.5px}
+thead th{color:var(--muted);font-weight:500;font-size:12.5px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:end}
+td.c{color:var(--muted);width:3.5rem}
+tfoot th,tfoot td{font-weight:600;border-bottom:0;border-top:1px solid var(--line)}
+.note{margin:0;color:var(--muted);font-size:12.5px;max-width:70ch}
+.note b{color:var(--ink-2);font-weight:600}
+.warn{color:#b3261e}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .warn{color:#f2a19b}}
+:root[data-theme="dark"] .warn{color:#f2a19b}
+
+/* tooltip */
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--tipbg);color:var(--tipfg);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.5;max-width:16rem;box-shadow:0 6px 18px rgb(0 0 0 / .25)}
+.tip b{display:block;font-size:13px;margin-bottom:2px}
+.tip span{display:flex;justify-content:space-between;gap:14px}
+
+@media (max-width:1020px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .c7,.c5{grid-column:span 12}
+}
+@media (max-width:720px){
+  .fbar-wrap{position:static;padding-block:0}
+  .f{flex:1 1 100%}
+  .ms summary{min-width:0;width:100%}
+  .seg{display:flex}.seg button{flex:1 1 auto}
+  .btn{flex:1 1 100%}
+}
+@media (max-width:560px){
+  .card{padding:14px}
+  .kpis{gap:10px}.kpi{padding:12px 14px}
+  .row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"lab val" "track track";row-gap:4px;column-gap:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app" dir="rtl" lang="ar">
+
+  <header class="top">
+    <h1>مؤشرات القطاع غير الربحي في المملكة العربية السعودية</h1>
+    <p>الجمعيات والمؤسسات الأهلية والمواد التنظيمية · المصدر: statistical_report.xlsx</p>
+  </header>
+
+  <div class="fbar-wrap">
+    <section class="fbar card" aria-label="الفلاتر">
+      <div class="f">
+        <span class="flabel">المنطقة</span>
+        <details class="ms" id="ms-regions">
+          <summary><span><span class="sr">المنطقة: </span><span data-role="val">الكل</span></span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="ms-panel">
+            <input type="search" class="ms-search" id="q-regions" placeholder="ابحث عن منطقة" aria-label="ابحث عن منطقة">
+            <ul class="ms-list"></ul>
+            <div class="ms-foot"><button type="button" class="link" data-role="clear">مسح الاختيار</button></div>
+          </div>
+        </details>
+      </div>
+      <div class="f">
+        <span class="flabel" id="lbl-type">نوع الكيان</span>
+        <div class="seg" role="group" aria-labelledby="lbl-type" id="type-seg"></div>
+      </div>
+      <div class="f">
+        <span class="flabel">موضوع المواد</span>
+        <details class="ms" id="ms-topics">
+          <summary><span><span class="sr">موضوع المواد: </span><span data-role="val">الكل</span></span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="ms-panel">
+            <input type="search" class="ms-search" id="q-topics" placeholder="ابحث عن موضوع" aria-label="ابحث عن موضوع">
+            <ul class="ms-list"></ul>
+            <div class="ms-foot"><button type="button" class="link" data-role="clear">مسح الاختيار</button></div>
+          </div>
+        </details>
+      </div>
+      <button type="button" class="btn" id="reset">إعادة ضبط الفلاتر</button>
+      <div class="chips" id="chips" hidden></div>
+    </section>
+  </div>
+
+  <section class="kpis" aria-label="المؤشرات الرئيسية">
+    <article class="kpi"><p class="kl" id="k1l"></p><p class="kv"><span class="num" id="k1v"></span><small id="k1u"></small></p><p class="ks" id="k1s"></p></article>
+    <article class="kpi"><p class="kl" id="k2l"></p><p class="kv"><span class="num" id="k2v"></span><small id="k2u"></small></p><p class="ks" id="k2s"></p></article>
+    <article class="kpi"><p class="kl" id="k3l"></p><p class="kv"><span class="num" id="k3v"></span><small id="k3u"></small></p><p class="ks" id="k3s"></p></article>
+    <article class="kpi"><p class="kl" id="k4l"></p><p class="kv"><span class="num" id="k4v"></span><small id="k4u"></small></p><p class="ks" id="k4s"></p></article>
+  </section>
+
+  <div class="grid">
+    <section class="card c7" aria-labelledby="h-regions">
+      <header class="ch">
+        <div><h2 id="h-regions">التوزيع الجغرافي للكيانات</h2><p class="sub" id="regions-sub"></p></div>
+        <span class="scope" id="scope-regions">فلتر: المنطقة</span>
+      </header>
+      <div class="bars" id="bars-regions" role="group" aria-label="عدد الكيانات حسب المنطقة، اضغط على صف لتحديد المنطقة"></div>
+      <p class="key" id="key-regions"></p>
+    </section>
+
+    <section class="card c5" aria-labelledby="h-types">
+      <header class="ch">
+        <div><h2 id="h-types">أنواع الكيانات</h2><p class="sub">الجمعيات مقابل المؤسسات الأهلية</p></div>
+        <span class="scope" id="scope-types">فلتر: نوع الكيان</span>
+      </header>
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg viewBox="0 0 200 200" id="donut" role="img" aria-label="توزيع الكيانات حسب النوع"><circle class="ring" cx="100" cy="100" r="76"></circle></svg>
+          <div class="mid"><b class="num" id="mid-v"></b><span id="mid-l"></span></div>
+        </div>
+        <div class="legend" id="legend"></div>
+        <p class="ratio" id="ratio"></p>
+      </div>
+    </section>
+
+    <section class="card c7" aria-labelledby="h-topics">
+      <header class="ch">
+        <div><h2 id="h-topics">المواد القانونية حسب الموضوع</h2><p class="sub" id="topics-sub"></p></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="scope" id="scope-topics">فلتر: الموضوع</span>
+          <div class="mini" role="group" aria-label="عدد المواضيع المعروضة" id="topn">
+            <button type="button" data-v="all" aria-pressed="true">الكل</button>
+            <button type="button" data-v="top10" aria-pressed="false">أعلى 10</button>
+          </div>
+        </div>
+      </header>
+      <div class="bars" id="bars-topics" role="group" aria-label="عدد المواد حسب الموضوع، اضغط على صف لتحديد الموضوع"></div>
+      <p class="key" id="key-topics"></p>
+    </section>
+
+    <section class="card c5" aria-labelledby="h-ins">
+      <header class="ch">
+        <div><h2 id="h-ins">أبرز الاستنتاجات</h2><p class="sub">محسوبة على كامل البيانات، ولا تتأثر بالفلاتر</p></div>
+      </header>
+      <ol class="ins" id="insights"></ol>
+    </section>
+
+    <section class="card c12" aria-labelledby="h-table">
+      <header class="ch">
+        <div><h2 id="h-table">جدول البيانات</h2><p class="sub" id="table-sub">القيم الأصلية كما وردت في الملف، وتتبع الفلاتر الحالية</p></div>
+      </header>
+      <div class="tabs" role="tablist" aria-label="اختيار الجدول">
+        <button type="button" class="tab" role="tab" data-tab="regions" aria-selected="true">التوزيع الجغرافي</button>
+        <button type="button" class="tab" role="tab" data-tab="topics" aria-selected="false">المواد القانونية</button>
+        <button type="button" class="tab" role="tab" data-tab="types" aria-selected="false">أنواع الكيانات</button>
+      </div>
+      <div class="tbl" role="tabpanel" id="tbl"></div>
+    </section>
+  </div>
+
+  <p class="note" id="note"></p>
+  <div class="tip" id="tip" role="presentation" hidden></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const DATA = {"topics": [["مجلس الإدارة ومجلس الأمناء", 41], ["العضوية", 27], ["التأسيس والترخيص والتسجيل", 16], ["الحل والدمج", 14], ["الانتخابات والترشح", 13], ["المالية والموارد", 13], ["اللجان", 10], ["المجالس الوطنية والفرعية", 9], ["أحكام عامة وختامية", 8], ["الأهداف والأنشطة", 5], ["الجمعية العمومية", 3], ["الرقابة الداخلية", 3], ["الصناديق الأهلية والعائلية", 3], ["الإفصاح والشفافية", 2], ["المكافآت", 2], ["العلاقات والتمويل الخارجي", 2], ["صفة النفع العام", 1], ["التمثيل والشخصية الاعتبارية", 1], ["الإدارة التنفيذية والموارد البشرية", 1], ["الحوكمة والسياسات", 1]], "regions": [["منطقة الرياض", 798], ["منطقة مكة المكرمة", 444], ["منطقة القصيم", 227], ["المنطقة الشرقية", 223], ["منطقة عسير", 220], ["منطقة المدينة المنورة", 183], ["منطقة جازان", 148], ["منطقة حائل", 130], ["منطقة الباحة", 90], ["منطقة الجوف", 73], ["منطقة تبوك", 73], ["منطقة نجران", 59], ["منطقة الحدود الشمالية", 55]], "types": [["جمعية أهلية", 2450], ["مؤسسة أهلية", 273]]};
+
+/* ---------- helpers ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n).toLocaleString('en-US');
+const pct = (v, t) => (v / t * 100).toFixed(1) + '%';
+const num = s => '<span class="num">' + s + '</span>';
+const sum = l => l.reduce((a, r) => a + r.n, 0);
+const joinAr = a => a.length < 2 ? a.join('') : a.slice(0, -1).join('، ') + ' و' + a[a.length - 1];
+const shortRegion = s => s.replace(/^منطقة /, '');
+const norm = s => String(s).replace(/[ً-ٟـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+function prep(rows){
+  const l = rows.map(r => ({name: r[0], n: r[1]})).sort((a, b) => b.n - a.n);
+  return l.map(r => Object.assign({}, r, {rank: 1 + l.filter(x => x.n > r.n).length}));
+}
+
+const regions = prep(DATA.regions);
+const topics  = prep(DATA.topics);
+const types   = prep(DATA.types);
+const T = {regions: sum(regions), topics: sum(topics), types: sum(types)};
+const PLURAL = {'جمعية أهلية': 'الجمعيات الأهلية', 'مؤسسة أهلية': 'المؤسسات الأهلية'};
+const plural = n => PLURAL[n] || n;
+const TYPE_COLOR = {};
+types.forEach((t, i) => { TYPE_COLOR[t.name] = i === 0 ? 'var(--s1)' : 'var(--s2)'; });
+
+const state = {regions: new Set(), type: null, topics: new Set(), topicView: 'all', tab: 'regions'};
+const toggle = (set, v) => { if (set.has(v)) set.delete(v); else set.add(v); };
+
+/* ---------- tooltip ---------- */
+const tip = $('#tip');
+function placeTip(x, y){
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = x + 14, top = y + 14;
+  if (left + w > window.innerWidth - 8) left = x - w - 14;
+  if (left < 8) left = 8;
+  if (top + h > window.innerHeight - 8) top = y - h - 14;
+  if (top < 8) top = 8;
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+}
+function showTip(html, x, y){ tip.innerHTML = html; tip.hidden = false; placeTip(x, y); }
+function hideTip(){ tip.hidden = true; }
+function tipHtml(title, pairs){
+  return '<b>' + esc(title) + '</b>' + pairs.map(p => '<span><em style="font-style:normal;opacity:.75">' + esc(p[0]) + '</em>' + num(p[1]) + '</span>').join('');
+}
+function wireTip(el, getHtml){
+  el.addEventListener('pointerenter', e => { if (e.pointerType === 'touch') return; showTip(getHtml(), e.clientX, e.clientY); });
+  el.addEventListener('pointermove', e => { if (!tip.hidden && e.pointerType !== 'touch') placeTip(e.clientX, e.clientY); });
+  el.addEventListener('pointerleave', hideTip);
+  el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip(getHtml(), r.left + r.width / 2, r.top); });
+  el.addEventListener('blur', hideTip);
+}
+
+/* ---------- bar chart (updated in place) ---------- */
+function makeBars(host, cfg){
+  let sig = ''; const els = new Map();
+  return function update(rows, view){
+    const nsig = rows.map(r => r.name).join('|');
+    if (nsig !== sig){
+      host.textContent = ''; els.clear();
+      rows.forEach(r => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'row';
+        b.innerHTML = '<span class="lab"></span><span class="track"><span class="fill"></span></span><span class="val"><b class="num"></b><span class="num pc"></span></span>';
+        $('.lab', b).textContent = r.name;
+        $('b', b).textContent = fmt(r.n);
+        $('.pc', b).textContent = pct(r.n, cfg.total);
+        b.addEventListener('click', () => cfg.onToggle(r.name));
+        wireTip(b, () => tipHtml(r.name, [['العدد', fmt(r.n)], ['النسبة', pct(r.n, cfg.total)], ['المرتبة', String(r.rank)]]));
+        host.appendChild(b); els.set(r.name, b);
+      });
+      sig = nsig;
+    }
+    rows.forEach((r, i) => {
+      const b = els.get(r.name), on = view.sel.has(r.name), any = view.sel.size > 0;
+      $('.fill', b).style.width = (r.n / view.max * 100).toFixed(2) + '%';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('hi', any ? on : i < view.hiN);
+      b.classList.toggle('off', any && !on);
+    });
+  };
+}
+
+const updRegions = makeBars($('#bars-regions'), {total: T.regions, onToggle: n => { toggle(state.regions, n); render(); }});
+const updTopics  = makeBars($('#bars-topics'),  {total: T.topics,  onToggle: n => { toggle(state.topics, n);  render(); }});
+
+/* ---------- donut ---------- */
+const NS = 'http://www.w3.org/2000/svg', R = 76, C = 2 * Math.PI * R, GAP = 3;
+const arcs = new Map(), legs = new Map();
+(function buildDonut(){
+  const svg = $('#donut'); let acc = 0;
+  types.forEach(t => {
+    const f = t.n / T.types, len = Math.max(f * C - GAP, 0);
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('class', 'seg-arc'); c.setAttribute('cx', 100); c.setAttribute('cy', 100); c.setAttribute('r', R);
+    c.setAttribute('transform', 'rotate(-90 100 100)');
+    c.setAttribute('stroke-dasharray', len.toFixed(3) + ' ' + (C - len).toFixed(3));
+    c.setAttribute('stroke-dashoffset', (-(acc * C + GAP / 2)).toFixed(3));
+    c.style.stroke = TYPE_COLOR[t.name];
+    c.setAttribute('tabindex', '0'); c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', t.name + ': ' + fmt(t.n) + ' (' + pct(t.n, T.types) + ')');
+    c.addEventListener('click', () => { state.type = state.type === t.name ? null : t.name; render(); });
+    c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); state.type = state.type === t.name ? null : t.name; render(); } });
+    wireTip(c, () => tipHtml(t.name, [['العدد', fmt(t.n)], ['النسبة', pct(t.n, T.types)]]));
+    svg.appendChild(c); arcs.set(t.name, c); acc += f;
+  });
+  const lg = $('#legend');
+  types.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'leg';
+    b.innerHTML = '<span class="sw"></span><span class="ln"></span><b class="num"></b><span class="num pc"></span>';
+    $('.sw', b).style.background = TYPE_COLOR[t.name];
+    $('.ln', b).textContent = t.name;
+    $('b', b).textContent = fmt(t.n);
+    $('.pc', b).textContent = pct(t.n, T.types);
+    b.addEventListener('click', () => { state.type = state.type === t.name ? null : t.name; render(); });
+    wireTip(b, () => tipHtml(t.name, [['العدد', fmt(t.n)], ['النسبة', pct(t.n, T.types)]]));
+    lg.appendChild(b); legs.set(t.name, b);
+  });
+  if (types.length >= 2){
+    $('#ratio').innerHTML = 'مقابل كل مؤسسة أهلية تقريبًا <b>' + num((types[0].n / types[1].n).toFixed(1)) + '</b> جمعية (' + fmt(types[0].n) + ' ÷ ' + fmt(types[1].n) + ').';
+    if (types[0].name !== 'جمعية أهلية' || types[1].name !== 'مؤسسة أهلية') $('#ratio').innerHTML = 'النسبة بين النوعين: ' + num((types[0].n / types[1].n).toFixed(1)) + ' إلى 1.';
+  }
+})();
+
+/* ---------- renderers ---------- */
+function setK(i, label, value, unit, sub){
+  $('#k' + i + 'l').textContent = label; $('#k' + i + 'v').textContent = value;
+  $('#k' + i + 'u').textContent = unit || ''; $('#k' + i + 's').textContent = sub || '';
+}
+function renderKpis(){
+  const rs = state.regions.size, ts = state.topics.size;
+  const rSum = sum(regions.filter(r => state.regions.has(r.name)));
+  const tSum = sum(topics.filter(r => state.topics.has(r.name)));
+  const typeRow = state.type ? types.find(t => t.name === state.type) : null;
+
+  if (rs){
+    setK(1, 'الكيانات في المناطق المختارة', fmt(rSum), 'كيان', pct(rSum, T.regions) + ' من ' + fmt(T.regions) + ' كيانًا' + (typeRow ? ' · لا تتوفر بيانات تقاطع النوع مع المنطقة' : ''));
+  } else if (typeRow){
+    setK(1, 'الكيانات من نوع ' + typeRow.name, fmt(typeRow.n), 'كيان', pct(typeRow.n, T.types) + ' من ' + fmt(T.types) + ' كيانًا');
+  } else {
+    setK(1, 'إجمالي الكيانات', fmt(T.regions), 'كيان', 'جمعيات ومؤسسات أهلية');
+  }
+  if (ts){
+    setK(2, 'المواد في المواضيع المختارة', fmt(tSum), 'مادة', ts + ' من ' + topics.length + ' موضوعًا · ' + pct(tSum, T.topics) + ' من ' + fmt(T.topics) + ' مادة');
+  } else {
+    setK(2, 'إجمالي المواد القانونية', fmt(T.topics), 'مادة', 'موزعة على ' + topics.length + ' موضوعًا');
+  }
+  setK(3, rs ? 'المناطق المختارة' : 'المناطق المغطاة', String(rs || regions.length), 'من ' + regions.length, rs ? 'من مناطق المملكة' : 'تغطية كاملة لمناطق المملكة');
+  const row = typeRow || types[0];
+  setK(4, 'نسبة ' + plural(row.name), pct(row.n, T.types), '', types.map(t => fmt(t.n) + ' ' + t.name).join(' مقابل '));
+}
+
+function renderRegions(){
+  updRegions(regions, {sel: state.regions, max: regions[0].n, hiN: 3});
+  const top3 = sum(regions.slice(0, 3));
+  $('#regions-sub').textContent = regions.length + ' منطقة · المتوسط ' + fmt(Math.round(T.regions / regions.length)) + ' والوسيط ' + fmt(median(regions.map(r => r.n))) + ' كيانًا';
+  $('#key-regions').innerHTML = state.regions.size
+    ? '<span><i class="sw hi"></i>مناطق محددة</span><span><i class="sw lo"></i>باقي المناطق</span>'
+    : '<span><i class="sw hi"></i>أعلى 3 مناطق (' + pct(top3, T.regions) + ' من الكيانات)</span><span><i class="sw lo"></i>باقي المناطق</span>';
+}
+function median(a){ const s = a.slice().sort((x, y) => x - y), m = s.length; return m % 2 ? s[(m - 1) / 2] : (s[m / 2 - 1] + s[m / 2]) / 2; }
+
+function renderTopics(){
+  const rows = state.topicView === 'top10' ? topics.slice(0, 10) : topics;
+  updTopics(rows, {sel: state.topics, max: topics[0].n, hiN: 4});
+  const top4 = sum(topics.slice(0, 4));
+  $('#topics-sub').textContent = topics.length + ' موضوعًا · ' + fmt(T.topics) + ' مادة' + (state.topicView === 'top10' ? ' · المعروض أعلى 10 مواضيع (' + pct(sum(topics.slice(0, 10)), T.topics) + ')' : '');
+  $('#key-topics').innerHTML = state.topics.size
+    ? '<span><i class="sw hi"></i>مواضيع محددة</span><span><i class="sw lo"></i>باقي المواضيع</span>'
+    : '<span><i class="sw hi"></i>أعلى 4 مواضيع (' + pct(top4, T.topics) + ' من المواد)</span><span><i class="sw lo"></i>باقي المواضيع</span>';
+  $$('#topn button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === state.topicView ? 'true' : 'false'));
+}
+
+function renderDonut(){
+  const sel = state.type;
+  types.forEach(t => {
+    const on = sel === t.name;
+    arcs.get(t.name).classList.toggle('sel', on);
+    arcs.get(t.name).classList.toggle('off', !!sel && !on);
+    legs.get(t.name).setAttribute('aria-pressed', on ? 'true' : 'false');
+    legs.get(t.name).classList.toggle('off', !!sel && !on);
+  });
+  const row = sel ? types.find(t => t.name === sel) : null;
+  $('#mid-v').textContent = fmt(row ? row.n : T.types);
+  $('#mid-l').textContent = row ? row.name + ' · ' + pct(row.n, T.types) : 'كيان';
+}
+
+function renderTable(){
+  const defs = {
+    regions: {rows: regions, sel: state.regions, total: T.regions, head: 'المنطقة', unit: 'عدد الكيانات'},
+    topics:  {rows: topics,  sel: state.topics,  total: T.topics,  head: 'الموضوع الرئيسي', unit: 'عدد المواد'},
+    types:   {rows: types,   sel: state.type ? new Set([state.type]) : new Set(), total: T.types, head: 'نوع الكيان', unit: 'العدد'}
+  }[state.tab];
+  const rows = defs.sel.size ? defs.rows.filter(r => defs.sel.has(r.name)) : defs.rows;
+  let cum = 0;
+  const body = rows.map(r => { cum += r.n; return '<tr><td class="c">' + r.rank + '</td><td>' + esc(r.name) + '</td><td class="n">' + num(fmt(r.n)) + '</td><td class="n">' + num(pct(r.n, defs.total)) + '</td><td class="n">' + num(pct(cum, defs.total)) + '</td></tr>'; }).join('');
+  $('#tbl').innerHTML = '<table><thead><tr><th scope="col">المرتبة</th><th scope="col">' + defs.head + '</th><th scope="col" class="n">' + defs.unit + '</th><th scope="col" class="n">النسبة من الإجمالي</th><th scope="col" class="n">التراكمي</th></tr></thead><tbody>' + body + '</tbody><tfoot><tr><th scope="row" colspan="2">المجموع' + (defs.sel.size ? ' (المحدد)' : '') + '</th><td class="n">' + num(fmt(cum)) + '</td><td class="n">' + num(pct(cum, defs.total)) + '</td><td></td></tr></tfoot></table>';
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.tab === state.tab ? 'true' : 'false'));
+}
+
+function renderScopes(){
+  $('#scope-regions').classList.toggle('on', state.regions.size > 0);
+  $('#scope-types').classList.toggle('on', !!state.type);
+  $('#scope-topics').classList.toggle('on', state.topics.size > 0);
+}
+
+/* ---------- insights (computed from the data) ---------- */
+function buildInsights(){
+  const out = [];
+  const t2 = sum(regions.slice(0, 2)), t3 = sum(regions.slice(0, 3));
+  out.push({h: 'تركّز جغرافي مرتفع', big: pct(t2, T.regions),
+    p: 'من الكيانات في ' + joinAr(regions.slice(0, 2).map(r => shortRegion(r.name))) + ' (' + fmt(t2) + ' من ' + fmt(T.regions) + ')، وبإضافة ' + shortRegion(regions[2].name) + ' تصل النسبة إلى ' + pct(t3, T.regions) + '. المتوسط ' + fmt(Math.round(T.regions / regions.length)) + ' كيانًا للمنطقة مقابل وسيط ' + fmt(median(regions.map(r => r.n))) + '.',
+    a: 'توسيع التأسيس خارج المنطقتين الأكبر.'});
+  const low = regions.slice(-4), lowSum = sum(low);
+  out.push({h: 'حضور أقل في الأطراف', big: pct(lowSum, T.regions),
+    p: joinAr(low.map(r => shortRegion(r.name))) + ' مجتمعة ' + fmt(lowSum) + ' كيانًا فقط. البيانات لا تتضمن أعداد السكان، لذلك لا يمكن الجزم بأنها فجوة فعلية.',
+    a: 'قارن العدد بعدد السكان قبل أي قرار.'});
+  if (types.length >= 2){
+    out.push({h: 'هيمنة الجمعيات', big: types[0].n / types[1].n >= 2 ? '≈ ' + Math.round(types[0].n / types[1].n) + ' : 1' : (types[0].n / types[1].n).toFixed(1) + ' : 1',
+      p: fmt(types[0].n) + ' ' + types[0].name + ' مقابل ' + fmt(types[1].n) + ' ' + types[1].name + '، أي ' + pct(types[0].n, T.types) + ' للنوع الأول.',
+      a: 'المؤسسات الأهلية شكل قانوني أقل استخدامًا.'});
+  }
+  const p2 = sum(topics.slice(0, 2)), p4 = sum(topics.slice(0, 4));
+  out.push({h: 'ثقل تنظيمي على بنية الإدارة', big: pct(p2, T.topics),
+    p: 'من المواد تخص ' + topics[0].name + ' و' + topics[1].name + ' (' + p2 + ' من ' + T.topics + ')، وأعلى 4 مواضيع تغطي ' + pct(p4, T.topics) + '.',
+    a: 'اللائحة تركز على الهيكل الداخلي للكيانات.'});
+  const gov = ['الإفصاح والشفافية', 'الرقابة الداخلية', 'الحوكمة والسياسات'].map(n => topics.find(t => t.name === n));
+  if (gov.every(Boolean)){
+    const gs = sum(gov);
+    out.push({h: 'مواضيع بنصوص قليلة', big: pct(gs, T.topics),
+      p: gov.map(g => g.name + ' (' + g.n + ')').join('، ') + ': ' + gs + ' مواد فقط. قلة المواد لا تعني بالضرورة ضعف التغطية.',
+      a: 'تستحق المراجعة ضمن تقييم الحوكمة.'});
+  }
+  $('#insights').innerHTML = out.map(i => '<li><h3>' + esc(i.h) + '</h3><span class="big">' + num(esc(i.big)) + '</span><p>' + esc(i.p) + '</p><p class="act"><b>للنظر:</b> ' + esc(i.a) + '</p></li>').join('');
+}
+
+/* ---------- filter controls ---------- */
+function norm1(s){ return norm(s); }
+function buildMulti(id, items, set){
+  const root = $('#' + id), list = $('.ms-list', root), q = $('.ms-search', root);
+  items.forEach(it => {
+    const li = document.createElement('li'); li.dataset.q = norm1(it.name);
+    li.innerHTML = '<label class="opt"><input type="checkbox"><span class="on"></span><span class="oc num"></span></label>';
+    $('.on', li).textContent = it.name; $('.oc', li).textContent = fmt(it.n);
+    const cb = $('input', li); cb.value = it.name;
+    cb.addEventListener('change', () => { if (cb.checked) set.add(it.name); else set.delete(it.name); render(); });
+    list.appendChild(li);
+  });
+  q.addEventListener('input', () => { const v = norm1(q.value.trim()); $$('li', list).forEach(li => { li.hidden = v !== '' && li.dataset.q.indexOf(v) === -1; }); });
+  $('[data-role="clear"]', root).addEventListener('click', () => { set.clear(); render(); });
+}
+buildMulti('ms-regions', regions, state.regions);
+buildMulti('ms-topics', topics, state.topics);
+
+const seg = $('#type-seg');
+[{name: null, label: 'الكل'}].concat(types.map(t => ({name: t.name, label: t.name}))).forEach(o => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = o.label;
+  b.addEventListener('click', () => { state.type = o.name; render(); });
+  b._name = o.name; seg.appendChild(b);
+});
+
+$('#topn').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.topicView = b.dataset.v; render(); });
+$$('.tab').forEach(t => t.addEventListener('click', () => { state.tab = t.dataset.tab; render(); }));
+$('#reset').addEventListener('click', () => { state.regions.clear(); state.topics.clear(); state.type = null; render(); });
+
+function syncControls(){
+  [['ms-regions', state.regions], ['ms-topics', state.topics]].forEach(p => {
+    const root = $('#' + p[0]), set = p[1];
+    $$('input[type="checkbox"]', root).forEach(cb => { cb.checked = set.has(cb.value); });
+    const val = set.size === 0 ? 'الكل' : set.size === 1 ? Array.from(set)[0] : set.size + ' مختارة';
+    $('[data-role="val"]', root).textContent = val;
+    root.classList.toggle('active', set.size > 0);
+  });
+  $$('button', seg).forEach(b => b.setAttribute('aria-pressed', b._name === state.type ? 'true' : 'false'));
+  const chips = $('#chips'); chips.textContent = '';
+  const add = (label, fn) => { const c = document.createElement('button'); c.type = 'button'; c.className = 'chip'; c.textContent = label; c.setAttribute('aria-label', 'إزالة ' + label); c.addEventListener('click', fn); chips.appendChild(c); };
+  state.regions.forEach(n => add(n, () => { state.regions.delete(n); render(); }));
+  if (state.type) add(state.type, () => { state.type = null; render(); });
+  state.topics.forEach(n => add(n, () => { state.topics.delete(n); render(); }));
+  chips.hidden = chips.children.length === 0;
+  $('#reset').disabled = chips.children.length === 0;
+}
+
+document.addEventListener('click', e => { $$('details.ms[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ hideTip(); $$('details.ms[open]').forEach(d => { d.open = false; const s = $('summary', d); if (s) s.focus(); }); } });
+window.addEventListener('scroll', hideTip, {passive: true});
+
+function renderNote(){
+  const ok = T.regions === T.types;
+  $('#note').innerHTML = '<b>ملاحظة على الربط بين الجداول.</b> الجداول الثلاثة مستقلة ولا يجمعها مفتاح مشترك. الرابط الوحيد القابل للتحقق هو أن مجموع المناطق (' + num(fmt(T.regions)) + ') ' + (ok ? 'يساوي' : '<span class="warn">لا يساوي</span>') + ' مجموع الأنواع (' + num(fmt(T.types)) + ')، ولذلك يعمل كل فلتر داخل جدوله فقط، ويوضح وسم «فلتر» في رأس كل بطاقة ما يتأثر به. للحصول على تصفية متقاطعة، مثل عدد الجمعيات في القصيم، يلزم جدول إضافي بصيغة المنطقة × نوع الكيان × العدد.';
+}
+
+function render(){
+  renderKpis(); renderRegions(); renderDonut(); renderTopics(); renderTable(); renderScopes(); syncControls();
+}
+buildInsights(); renderNote(); render();
+})();
+</script>
+
+</body></html>
