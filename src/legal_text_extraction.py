@@ -66,7 +66,7 @@ def parse_ordinal(label):
             return 100 + parse_ordinal(" ".join(words[:words.index("بعد")]))
         except (TypeError, ValueError):
             return None
-    if "و" in words:
+    if len(words) >= 2:
         # Compound forms: الخامسة والأربعون / الثالثة والعشرون
         for i, word in enumerate(words):
             if word in ("والعشرون", "والعشرين", "والثلاثون", "والثلاثين",
